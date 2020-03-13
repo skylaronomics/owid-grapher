@@ -497,6 +497,10 @@ export class Controls {
         return this.props.chart.tab === "map"
     }
 
+    @computed get widthIsGreaterThan700(): boolean {
+        return this.props.width > 700
+    }
+
     @computed get hasAddButton(): boolean {
         const { chart } = this.props
         return (
@@ -511,6 +515,7 @@ export class Controls {
         let numLines = 1
         if (this.hasTimeline) numLines += 1
         if (this.hasInlineControls) numLines += 1
+        if (this.widthIsGreaterThan700 && numLines > 2) numLines -= 1
         return numLines
     }
 
@@ -833,26 +838,15 @@ export class ControlsFooterView extends React.Component<{
         const {
             isShareMenuActive,
             isSettingsMenuActive,
-            hasTimeline,
-            hasInlineControls
+            hasInlineControls,
+            widthIsGreaterThan700
         } = props.controls
         const { chart, chartView } = props.controls.props
 
-        const timelineElement = hasTimeline && (
-            <div className="footerRowSingle">
-                <TimelineControl chart={this.props.controls.props.chart} />
-            </div>
-        )
-
-        const inlineControlsElement = hasInlineControls && (
-            <div className="footerRowSingle">
-                {this._getInlineControlsElement()}
-            </div>
-        )
-
-        const tabsElement = (
-            <div className="footerRowSingle">{this._getTabsElement()}</div>
-        )
+        const controlsElement =
+            widthIsGreaterThan700 && hasInlineControls
+                ? this._getWideControlsElement()
+                : this._getNarrowControlsElement()
 
         const shareMenuElement = isShareMenuActive && (
             <ShareMenu
@@ -871,12 +865,56 @@ export class ControlsFooterView extends React.Component<{
                 className="ControlsFooter"
                 style={{ height: props.controls.footerHeight }}
             >
-                {timelineElement}
-                {inlineControlsElement}
-                {tabsElement}
+                {controlsElement}
                 {shareMenuElement}
                 {settingsMenuElement}
             </div>
+        )
+    }
+
+    private _getWideControlsElement() {
+        const { hasInlineControls, hasTimeline } = this.props.controls
+        const inlineControlsElement = hasInlineControls && (
+            <div>{this._getInlineControlsElement()}</div>
+        )
+
+        const timelineElement = hasTimeline && (
+            <div className="footerRowSingle">
+                <TimelineControl chart={this.props.controls.props.chart} />
+            </div>
+        )
+
+        return (
+            <>
+                {timelineElement}
+                <div className="footerRowMulti">
+                    {inlineControlsElement}
+                    {this._getTabsElement()}
+                </div>
+            </>
+        )
+    }
+
+    private _getNarrowControlsElement() {
+        const { hasTimeline, hasInlineControls } = this.props.controls
+
+        const timelineElement = hasTimeline && (
+            <div className="footerRowSingle">
+                <TimelineControl chart={this.props.controls.props.chart} />
+            </div>
+        )
+
+        const inlineControlsElement = hasInlineControls && (
+            <div className="footerRowSingle">
+                {this._getInlineControlsElement()}
+            </div>
+        )
+
+        return (
+            <>
+                {timelineElement} {inlineControlsElement}
+                <div className="footerRowSingle">{this._getTabsElement()}</div>
+            </>
         )
     }
 }
