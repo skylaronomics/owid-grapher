@@ -1,6 +1,7 @@
 import * as React from "react"
 import { observer } from "mobx-react"
 import { ChartEditor, Log } from "./ChartEditor"
+import { Section } from "./Forms"
 import { computed, action } from "mobx"
 const timeago = require("timeago.js")()
 
@@ -53,7 +54,17 @@ export class EditorHistoryTab extends React.Component<{ editor: ChartEditor }> {
         this.props.editor.applyConfig(config)
     }
 
+    @action.bound onChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+        try {
+            const newConfig = JSON.parse(event.currentTarget.value)
+            this.props.editor.chart.update(newConfig)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
     render() {
+        const editor = this.props.editor
         return (
             <div>
                 {this.logs.map((log, i) => (
@@ -64,6 +75,18 @@ export class EditorHistoryTab extends React.Component<{ editor: ChartEditor }> {
                         ></LogRenderer>
                     </ul>
                 ))}
+                <Section name="Debug">
+                    <textarea
+                        rows={7}
+                        className="form-control"
+                        value={JSON.stringify(
+                            editor.currentChartJson,
+                            undefined,
+                            2
+                        )}
+                        onChange={this.onChange}
+                    />
+                </Section>
             </div>
         )
     }
