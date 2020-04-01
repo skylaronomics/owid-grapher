@@ -1,4 +1,15 @@
-import { extend, map, filter, includes, uniqWith, isEqual, first } from "./Util"
+import {
+    extend,
+    map,
+    filter,
+    includes,
+    uniqWith,
+    isEqual,
+    first,
+    uniq,
+    flatten,
+    sortBy
+} from "./Util"
 import { observable, computed, action, autorun, toJS, runInAction } from "mobx"
 import { ComparisonLineConfig } from "./ComparisonLine"
 import { AxisConfig, AxisConfigProps } from "./AxisConfig"
@@ -235,6 +246,13 @@ export class ChartConfig {
         return yearIsDayVar
             ? (day: number) => formatDay(day, yearIsDayVar.display.zeroDay)
             : formatYear
+    }
+
+    // returns entities sorted
+    @computed get uniqueEntitiesAcrossDimensions() {
+        return sortBy(
+            uniq(flatten(this.data.filledDimensions.map(d => d.entitiesUniq)))
+        )
     }
 
     vardata: VariableData
