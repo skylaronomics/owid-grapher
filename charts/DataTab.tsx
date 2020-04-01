@@ -21,6 +21,8 @@ export class DataTab extends React.Component<{
     @computed get csvBlob() {
         const { chart } = this.props
         const { vardata } = chart
+        const yearIsDayVar = chart.yearIsDayVar
+        const dayIndexedCSV = yearIsDayVar ? true : false
 
         const dimensions = chart.data.filledDimensions.filter(
             d => d.property !== "color"
@@ -28,9 +30,12 @@ export class DataTab extends React.Component<{
         const entitiesUniq = sortBy(
             uniq(flatten(dimensions.map(d => d.entitiesUniq)))
         ) as string[]
+        // only get days if chart has a day-indexed variable
         const yearsUniq = sortBy(
-            uniq(flatten(dimensions.map(d => d.yearsUniq)))
-        ) as number[]
+            dayIndexedCSV
+                ? yearIsDayVar?.yearsUniq
+                : uniq(flatten(dimensions.map(d => d.yearsUniq)))
+        )
 
         const rows: string[] = []
 
@@ -49,20 +54,23 @@ export class DataTab extends React.Component<{
             yearsUniq.forEach(year => {
                 const row: (string | number)[] = [
                     entity,
-                    vardata.entityMetaByKey[entity].code || "",
+                    vardata.entityMetaByKey[entity].code ?? "",
                     chart.formatYearFunction(year)
                 ]
 
                 let rowHasSomeValue = false
                 dimensions.forEach(dim => {
-                    const valueByYear = dim.valueByEntityAndYear.get(entity)
-                    const value = valueByYear ? valueByYear.get(year) : null
+                    const fixedYearDimension =
+                        dayIndexedCSV && !dim.yearIsDayVar
 
-                    if (value == null) row.push("")
-                    else {
+                    const value = fixedYearDimension
+                        ? dim.latestValueforEntity(entity)
+                        : dim.valueByEntityAndYear.get(entity)?.get(year)
+
+                    if (value) {
                         row.push(value)
                         rowHasSomeValue = true
-                    }
+                    } else row.push("")
                 })
 
                 // Only add rows which actually have some data in them
