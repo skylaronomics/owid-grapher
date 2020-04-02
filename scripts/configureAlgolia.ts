@@ -11,52 +11,70 @@ export async function configureAlgolia() {
     const client = algoliasearch(ALGOLIA_ID, ALGOLIA_SECRET_KEY)
     const chartsIndex = client.initIndex("charts")
 
-    await chartsIndex.setSettings({
-        searchableAttributes: [
-            "title",
-            "unordered(variantName)",
-            "unordered(subtitle)",
-            "unordered(_tags)",
-            "unordered(availableEntities)"
-        ],
-        ranking: ["exact", "typo", "attribute", "words", "proximity", "custom"],
-        customRanking: ["asc(numDimensions)", "asc(titleLength)"],
-        attributesToSnippet: ["subtitle:24"],
-        attributeForDistinct: "id",
-        alternativesAsExact: [
-            "ignorePlurals",
-            "singleWordSynonym",
-            "multiWordsSynonym"
-        ],
-        exactOnSingleWordQuery: "none",
-        disableExactOnAttributes: ["_tags"],
-        optionalWords: ["vs"],
-        removeStopWords: ["en"]
-    })
+    chartsIndex
+        .setSettings({
+            searchableAttributes: [
+                "title",
+                "unordered(variantName)",
+                "unordered(subtitle)",
+                "unordered(_tags)",
+                "unordered(availableEntities)"
+            ],
+            ranking: [
+                "exact",
+                "typo",
+                "attribute",
+                "words",
+                "proximity",
+                "custom"
+            ],
+            customRanking: ["asc(numDimensions)", "asc(titleLength)"],
+            attributesToSnippet: ["subtitle:24"],
+            attributeForDistinct: "id",
+            alternativesAsExact: [
+                "ignorePlurals",
+                "singleWordSynonym",
+                "multiWordsSynonym"
+            ],
+            exactOnSingleWordQuery: "none",
+            disableExactOnAttributes: ["_tags"],
+            optionalWords: ["vs"],
+            removeStopWords: ["en"]
+        })
+        .wait()
 
     const pagesIndex = client.initIndex("pages")
 
-    await pagesIndex.setSettings({
-        searchableAttributes: [
-            "unordered(title)",
-            "unordered(content)",
-            "unordered(_tags)",
-            "unordered(authors)"
-        ],
-        ranking: ["exact", "typo", "attribute", "words", "proximity", "custom"],
-        customRanking: ["desc(importance)"],
-        attributesToSnippet: ["content:24"],
-        attributeForDistinct: "slug",
-        alternativesAsExact: [
-            "ignorePlurals",
-            "singleWordSynonym",
-            "multiWordsSynonym"
-        ],
-        attributesForFaceting: ["searchable(_tags)", "searchable(authors)"],
-        exactOnSingleWordQuery: "none",
-        disableExactOnAttributes: ["_tags"],
-        removeStopWords: ["en"]
-    })
+    pagesIndex
+        .setSettings({
+            searchableAttributes: [
+                "unordered(title)",
+                "unordered(content)",
+                "unordered(_tags)",
+                "unordered(authors)"
+            ],
+            ranking: [
+                "exact",
+                "typo",
+                "attribute",
+                "words",
+                "proximity",
+                "custom"
+            ],
+            customRanking: ["desc(importance)"],
+            attributesToSnippet: ["content:24"],
+            attributeForDistinct: "slug",
+            alternativesAsExact: [
+                "ignorePlurals",
+                "singleWordSynonym",
+                "multiWordsSynonym"
+            ],
+            attributesForFaceting: ["searchable(_tags)", "searchable(authors)"],
+            exactOnSingleWordQuery: "none",
+            disableExactOnAttributes: ["_tags"],
+            removeStopWords: ["en"]
+        })
+        .wait()
 
     const synonyms = [
         ["kids", "children"],
@@ -79,17 +97,21 @@ export async function configureAlgolia() {
     const algoliaSynonyms = synonyms.map(s => {
         return {
             objectID: s.join("-"),
-            type: "synonym",
+            type: "synonym" as "synonym",
             synonyms: s
-        } as algoliasearch.Synonym
+        }
     })
 
-    await pagesIndex.batchSynonyms(algoliaSynonyms, {
-        replaceExistingSynonyms: true
-    })
-    await chartsIndex.batchSynonyms(algoliaSynonyms, {
-        replaceExistingSynonyms: true
-    })
+    pagesIndex
+        .saveSynonyms(algoliaSynonyms, {
+            replaceExistingSynonyms: true
+        })
+        .wait()
+    chartsIndex
+        .saveSynonyms(algoliaSynonyms, {
+            replaceExistingSynonyms: true
+        })
+        .wait()
 }
 
 if (require.main === module) {
