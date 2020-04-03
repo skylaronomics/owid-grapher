@@ -9,7 +9,7 @@ import {
     isNumber,
     formatDay,
     formatYear,
-    max
+    last
 } from "./Util"
 import { ChartDimension } from "./ChartDimension"
 import { TickFormattingOptions } from "./TickFormattingOptions"
@@ -194,12 +194,12 @@ export class DimensionWithData {
         return this.variable.entities
     }
 
-    @computed get latestYear() {
-        return max(this.years) as number
-    }
-
+    /*  returns [year of latest value, latest value] for a given entity and variable
+        returns null if no value found
+     */
     latestValueforEntity(entity: string) {
-        return this.valueByEntityAndYear.get(entity)?.get(this.latestYear)
+        const valueByYear = this.valueByEntityAndYear.get(entity)
+        return valueByYear ? last(Array.from(valueByYear)) ?? null : null
     }
 
     @computed get valueByEntityAndYear(): Map<
