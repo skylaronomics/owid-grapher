@@ -11,70 +11,52 @@ export async function configureAlgolia() {
     const client = algoliasearch(ALGOLIA_ID, ALGOLIA_SECRET_KEY)
     const chartsIndex = client.initIndex("charts")
 
-    chartsIndex
-        .setSettings({
-            searchableAttributes: [
-                "title",
-                "unordered(variantName)",
-                "unordered(subtitle)",
-                "unordered(_tags)",
-                "unordered(availableEntities)"
-            ],
-            ranking: [
-                "exact",
-                "typo",
-                "attribute",
-                "words",
-                "proximity",
-                "custom"
-            ],
-            customRanking: ["asc(numDimensions)", "asc(titleLength)"],
-            attributesToSnippet: ["subtitle:24"],
-            attributeForDistinct: "id",
-            alternativesAsExact: [
-                "ignorePlurals",
-                "singleWordSynonym",
-                "multiWordsSynonym"
-            ],
-            exactOnSingleWordQuery: "none",
-            disableExactOnAttributes: ["_tags"],
-            optionalWords: ["vs"],
-            removeStopWords: ["en"]
-        })
-        .wait()
+    await chartsIndex.setSettings({
+        searchableAttributes: [
+            "title",
+            "unordered(variantName)",
+            "unordered(subtitle)",
+            "unordered(_tags)",
+            "unordered(availableEntities)"
+        ],
+        ranking: ["exact", "typo", "attribute", "words", "proximity", "custom"],
+        customRanking: ["asc(numDimensions)", "asc(titleLength)"],
+        attributesToSnippet: ["subtitle:24"],
+        attributeForDistinct: "id",
+        alternativesAsExact: [
+            "ignorePlurals",
+            "singleWordSynonym",
+            "multiWordsSynonym"
+        ],
+        exactOnSingleWordQuery: "none",
+        disableExactOnAttributes: ["_tags"],
+        optionalWords: ["vs"],
+        removeStopWords: ["en"]
+    })
 
     const pagesIndex = client.initIndex("pages")
 
-    pagesIndex
-        .setSettings({
-            searchableAttributes: [
-                "unordered(title)",
-                "unordered(content)",
-                "unordered(_tags)",
-                "unordered(authors)"
-            ],
-            ranking: [
-                "exact",
-                "typo",
-                "attribute",
-                "words",
-                "proximity",
-                "custom"
-            ],
-            customRanking: ["desc(importance)"],
-            attributesToSnippet: ["content:24"],
-            attributeForDistinct: "slug",
-            alternativesAsExact: [
-                "ignorePlurals",
-                "singleWordSynonym",
-                "multiWordsSynonym"
-            ],
-            attributesForFaceting: ["searchable(_tags)", "searchable(authors)"],
-            exactOnSingleWordQuery: "none",
-            disableExactOnAttributes: ["_tags"],
-            removeStopWords: ["en"]
-        })
-        .wait()
+    await pagesIndex.setSettings({
+        searchableAttributes: [
+            "unordered(title)",
+            "unordered(content)",
+            "unordered(_tags)",
+            "unordered(authors)"
+        ],
+        ranking: ["exact", "typo", "attribute", "words", "proximity", "custom"],
+        customRanking: ["desc(importance)"],
+        attributesToSnippet: ["content:24"],
+        attributeForDistinct: "slug",
+        alternativesAsExact: [
+            "ignorePlurals",
+            "singleWordSynonym",
+            "multiWordsSynonym"
+        ],
+        attributesForFaceting: ["searchable(_tags)", "searchable(authors)"],
+        exactOnSingleWordQuery: "none",
+        disableExactOnAttributes: ["_tags"],
+        removeStopWords: ["en"]
+    })
 
     const synonyms = [
         ["kids", "children"],
@@ -102,16 +84,12 @@ export async function configureAlgolia() {
         }
     })
 
-    pagesIndex
-        .saveSynonyms(algoliaSynonyms, {
-            replaceExistingSynonyms: true
-        })
-        .wait()
-    chartsIndex
-        .saveSynonyms(algoliaSynonyms, {
-            replaceExistingSynonyms: true
-        })
-        .wait()
+    await pagesIndex.saveSynonyms(algoliaSynonyms, {
+        replaceExistingSynonyms: true
+    })
+    await chartsIndex.saveSynonyms(algoliaSynonyms, {
+        replaceExistingSynonyms: true
+    })
 }
 
 if (require.main === module) {

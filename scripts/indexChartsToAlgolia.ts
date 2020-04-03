@@ -41,13 +41,11 @@ async function indexChartsToAlgolia() {
     const finalIndex = client.initIndex("charts")
     const tmpIndex = client.initIndex("charts_tmp")
 
-    client
-        .copyIndex(finalIndex.indexName, tmpIndex.indexName, [
-            "settings",
-            "synonyms",
-            "rules"
-        ])
-        .wait()
+    await client.copyIndex(finalIndex.indexName, tmpIndex.indexName, [
+        "settings",
+        "synonyms",
+        "rules"
+    ])
 
     const records = []
     for (const c of chartsToIndex) {
@@ -71,8 +69,8 @@ async function indexChartsToAlgolia() {
 
     console.log(records.length)
 
-    tmpIndex.saveObjects(records).wait()
-    client.moveIndex(tmpIndex.indexName, finalIndex.indexName).wait()
+    await tmpIndex.saveObjects(records)
+    await client.moveIndex(tmpIndex.indexName, finalIndex.indexName)
 
     await db.end()
 }

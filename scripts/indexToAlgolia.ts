@@ -46,13 +46,11 @@ async function indexToAlgolia() {
 
     // Copy to a temporary index which we will then update
     // This is so we can do idempotent reindexing
-    client
-        .copyIndex(finalIndex.indexName, tmpIndex.indexName, [
-            "settings",
-            "synonyms",
-            "rules"
-        ])
-        .wait()
+    await client.copyIndex(finalIndex.indexName, tmpIndex.indexName, [
+        "settings",
+        "synonyms",
+        "rules"
+    ])
 
     const postsApi = await wpdb.getPosts()
 
@@ -111,8 +109,8 @@ async function indexToAlgolia() {
         }
     }
 
-    tmpIndex.saveObjects(records).wait()
-    client.moveIndex(tmpIndex.indexName, finalIndex.indexName).wait()
+    await tmpIndex.saveObjects(records)
+    await client.moveIndex(tmpIndex.indexName, finalIndex.indexName)
 
     await wpdb.end()
     await db.end()
